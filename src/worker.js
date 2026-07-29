@@ -12,7 +12,7 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    const API_BASE = "https://item4gamer.com/api";
+    const API_BASE = "https://item4gamer.com/wp-json/reseller/v1";
 
     const incomingUrl = new URL(request.url);
     const targetUrl = API_BASE + incomingUrl.pathname + incomingUrl.search;
