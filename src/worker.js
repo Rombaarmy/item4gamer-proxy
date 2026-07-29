@@ -14,7 +14,6 @@ export default {
 
     const incomingUrl = new URL(request.url);
 
-    // Page de test intégrée, servie directement par ce Worker (https, pas de blocage réseau)
     if (incomingUrl.pathname === "/test" && request.method === "GET") {
       return new Response(TEST_PAGE_HTML, {
         headers: { "Content-Type": "text/html; charset=utf-8" },
@@ -62,39 +61,64 @@ const TEST_PAGE_HTML = `<!DOCTYPE html>
   .sub{font-size:12px;color:#888;margin-bottom:16px}
   .warn{background:#fff8e1;border:1.5px solid #ffe082;color:#a06a00;font-size:12px;font-weight:600;padding:10px 12px;border-radius:10px;margin-bottom:16px;line-height:1.4}
   label{display:block;font-size:11px;font-weight:800;color:#666;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;margin-top:14px}
-  input{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:15px;outline:none}
-  input:focus{border-color:#ffb300}
+  textarea{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:13px;outline:none;font-family:monospace;min-height:120px}
+  textarea:focus{border-color:#ffb300}
   button{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#ffd54f,#ffb300);color:#fff;font-size:15px;font-weight:800;margin-top:18px;cursor:pointer}
   button:disabled{opacity:.6}
   pre{white-space:pre-wrap;word-break:break-word;background:#1a1a2e;color:#8ef58e;font-size:12px;padding:14px;border-radius:12px;margin-top:16px;max-height:300px;overflow:auto}
   .status{font-size:12px;font-weight:700;margin-top:10px}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .preset-btn{flex:1;min-width:100px;padding:8px;border:1.5px solid #ddd;border-radius:8px;background:#fff;font-size:11px;font-weight:700;cursor:pointer;color:#555}
 </style>
 </head>
 <body>
   <h1>🧪 Test commande réelle</h1>
-  <div class="sub">Servi directement par le Worker item4gamer-proxy</div>
+  <div class="sub">Corps JSON envoyé à /order/add-order</div>
   <div class="warn">⚠️ Ceci envoie une VRAIE commande chez Item4Gamer et débite ton wallet réel.</div>
-  <label for="vid">Variation ID (pack)</label>
-  <input id="vid" value="35430">
-  <label for="sid">Save ID (Player ID PUBG)</label>
-  <input id="sid" value="">
+
+  <label>Corps de la requête (modifiable)</label>
+  <textarea id="body">{
+  "variation_id": "35430",
+  "fields": {
+    "save_id": "52155745326"
+  }
+}</textarea>
+  <div class="presets">
+    <button class="preset-btn" onclick="setPreset(1)">Essai A: fields</button>
+    <button class="preset-btn" onclick="setPreset(2)">Essai B: à plat</button>
+    <button class="preset-btn" onclick="setPreset(3)">Essai C: data</button>
+  </div>
+
   <button id="btn" onclick="sendOrder()">Envoyer la commande test</button>
   <div class="status" id="status"></div>
   <pre id="result" style="display:none"></pre>
+
 <script>
+function setPreset(n){
+  var vid = "35430", sid = "52155745326";
+  var v;
+  if(n===1) v = { variation_id: vid, fields: { save_id: sid } };
+  if(n===2) v = { variation_id: vid, save_id: sid };
+  if(n===3) v = { variation_id: vid, data: { save_id: sid } };
+  document.getElementById('body').value = JSON.stringify(v, null, 2);
+}
 async function sendOrder(){
-  var vid = document.getElementById('vid').value.trim();
-  var sid = document.getElementById('sid').value.trim();
   var statusEl = document.getElementById('status');
   var resultEl = document.getElementById('result');
   var btn = document.getElementById('btn');
-  if(!vid || !sid){ statusEl.textContent = '⚠️ Remplis les deux champs.'; statusEl.style.color = '#e74c3c'; return; }
+  var raw = document.getElementById('body').value;
+  var parsed;
+  try{ parsed = JSON.parse(raw); }catch(e){
+    statusEl.textContent = '⚠️ JSON invalide : ' + e.message;
+    statusEl.style.color = '#e74c3c';
+    return;
+  }
   btn.disabled = true; btn.textContent = 'Envoi en cours...'; statusEl.textContent=''; resultEl.style.display='none';
   try{
     var res = await fetch('/order/add-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ variation_id: vid, save_id: sid })
+      body: JSON.stringify(parsed)
     });
     var text = await res.text();
     var pretty = text;
