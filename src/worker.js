@@ -1,6 +1,6 @@
 export default {
   async fetch(request, env, ctx) {
-    const ALLOWED_ORIGIN = "https://TON-SITE.netlify.app"; // à corriger plus tard
+    const ALLOWED_ORIGIN = "https://guileless-blancmange-9a9a96.netlify.app";
 
     const corsHeaders = {
       "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
