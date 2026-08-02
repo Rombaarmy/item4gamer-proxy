@@ -1,6 +1,6 @@
 export default {
   async fetch(request, env, ctx) {
-    const ALLOWED_ORIGIN = "https://mgales.pages.dev";
+    const ALLOWED_ORIGIN = "https://mgames.pages.dev";
 
     const corsHeaders = {
       "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
