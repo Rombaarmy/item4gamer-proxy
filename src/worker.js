@@ -1,6 +1,6 @@
 export default {
   async fetch(request, env, ctx) {
-    const ALLOWED_ORIGINS = ["https://mgames.pages.dev", "https://admgames.pages.dev", "https://adgamers.pages.dev"];
+    const ALLOWED_ORIGINS = ["https://mgames.pages.dev", "https://admgames.pages.dev", "https://adgames.pages.dev"];
     const requestOrigin = request.headers.get("Origin");
     const allowOrigin = ALLOWED_ORIGINS.includes(requestOrigin) ? requestOrigin : ALLOWED_ORIGINS[0];
 
