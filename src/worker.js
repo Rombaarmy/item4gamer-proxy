@@ -1,9 +1,11 @@
 export default {
   async fetch(request, env, ctx) {
-    const ALLOWED_ORIGINS = ["https://mgames.pages.dev", "https://admgames.pages.dev", "https://vutarif.pages.dev"];
+        const ALLOWED_ORIGINS = ["https://mgames.pages.dev", "https://admgames.pages.dev", "https://vutarif.pages.dev"];
     const requestOrigin = request.headers.get("Origin");
-    const allowOrigin = ALLOWED_ORIGINS.includes(requestOrigin) ? requestOrigin : ALLOWED_ORIGINS[0];
-
+    // "null" = fichier ouvert en local, pour tester sans déployer
+    const allowOrigin = (ALLOWED_ORIGINS.includes(requestOrigin) || requestOrigin === "null")
+      ? requestOrigin
+      : ALLOWED_ORIGINS[0];
     const corsHeaders = {
       "Access-Control-Allow-Origin": allowOrigin,
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
